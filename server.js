@@ -19,7 +19,7 @@ app.get('/search', async (req, res) => {
     const response = await axios.get(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=500&type=point_of_interest&key=${apiKey}`);
     const results = response.data.results;
     
-    // Format results as human-readable strings
+    // Format results as human-readable string
     const formattedResults = results.map(result => {
       return {
         name: result.name,
