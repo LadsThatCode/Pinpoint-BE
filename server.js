@@ -56,7 +56,7 @@ app.get('/search', async (req, res) => {
   
     // Get nearby places of interest from Google Maps API using the latitude and longitude
     const nearbySearchResponse = await axios.get(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=500&key=${apiKey}`);
-    const placesOfInterest = nearbySearchResponse.data.results;
+    const placesOfInterest = nearbySearchResponse.data.results.slice(0, 3);
   
     // Get photo reference and build photo URL for the location
     const photoReference = nearbySearchResponse.data.results[0]?.photos?.[0]?.photo_reference;
