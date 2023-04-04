@@ -10,6 +10,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 
 // Routes
+app.delete('/search:searchID', deleteSearch)
+app.post('/search', postSearch)
+app.put('/search', updateSearch)
 app.get('/search', async (req, res) => {
   const lat = req.query.lat;
   const lng = req.query.lng;
@@ -34,6 +37,26 @@ app.get('/search', async (req, res) => {
     res.status(500).json({ message: 'Error fetching data from Google Places API' });
   }
 });
+
+async function deleteSearch(request, response,next){
+  try{ 
+    let id = request.params.bookID;
+
+    let data = request.body;
+    
+    const updatedSearch await {model name}.findByIdAndUpdate(id,data{new: true, overwrite: true});
+
+    response.status(200).send(updatedSearch)
+  }catch(error){
+    next(error);
+  }
+}
+
+async function postSearch(request,response,next){
+  let createdSearchgit 
+}
+
+
 
 // Start the server
 app.listen(PORT, () => {
