@@ -1,2 +1,7 @@
+# Node.js
 node_modules/
+
+# dotenv
 .env
+
+.DS_Store
