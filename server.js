@@ -34,26 +34,29 @@ db.once('open', () => {
 
 // Define route for searching location data
 app.get('/search', async (req, res) => {
-  const lat = req.query.lat;
-  const lng = req.query.lng;
+  const cityName = req.query.city;
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+
 
   try {
     // Get geocoding data from Google Maps API
-    const geocodingResponse = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
+    const geocodingResponse = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityName)}&key=${apiKey}`);
+    const lat = geocodingResponse.data.results[0].geometry.location.lat;
+    const lng = geocodingResponse.data.results[0].geometry.location.lng;
     const addressComponents = geocodingResponse.data.results[0].address_components;
     const city = addressComponents.find(component => component.types.includes('locality')).long_name;
     const state = addressComponents.find(component => component.types.includes('administrative_area_level_1')).short_name;
     const country = addressComponents.find(component => component.types.includes('country')).long_name;
     const formattedAddress = geocodingResponse.data.results[0].formatted_address;
   
-    // Get timezone data from Google Maps API
+  
+    // Get timezone data from Google Maps API using the latitude and longitude
     const timezoneResponse = await axios.get(`https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${Math.floor(Date.now() / 1000)}&key=${apiKey}`);
     const currentTime = new Date(Date.now() + (timezoneResponse.data.rawOffset * 1000) + (timezoneResponse.data.dstOffset * 1000)).toLocaleString();
   
-    // Get nearby places of interest from Google Maps API
+    // Get nearby places of interest from Google Maps API using the latitude and longitude
     const nearbySearchResponse = await axios.get(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=500&key=${apiKey}`);
-    const placesOfInterest = nearbySearchResponse.data.results;
+    const placesOfInterest = nearbySearchResponse.data.results.slice(0, 3);
   
     // Get photo reference and build photo URL for the location
     const photoReference = nearbySearchResponse.data.results[0]?.photos?.[0]?.photo_reference;
@@ -87,7 +90,6 @@ app.get('/search', async (req, res) => {
     console.error(error);
     res.status(500).json({ message: 'Error fetching data' });
   }
-  
 });
 
 // DELETE search route handler
