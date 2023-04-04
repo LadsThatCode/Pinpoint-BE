@@ -13,20 +13,18 @@ console.log('Send dudes');
 // Middleware
 app.use(cors());
 
-
 // Routes
-app.delete('/search:searchID', deleteSearch)
+app.delete('/search/:searchID', deleteSearch)
 app.post('/search', postSearch)
-app.put('/search', updateSearch)
+app.put('/search/:searchID', updateSearch)
 
 // MongoDB connection (Mongoose connection example)
 const MONGODB_URI = process.env.MONGODB_URI;
 
-// mongoose.connect(MONGODB_URI, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
-mongoose.connect(MONGODB_URI);
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -35,7 +33,6 @@ db.once('open', () => {
 });
 
 // Define route for searching location data
-
 app.get('/search', async (req, res) => {
   const lat = req.query.lat;
   const lng = req.query.lng;
@@ -93,48 +90,32 @@ app.get('/search', async (req, res) => {
   
 });
 
-async function deleteSearch(request, response,next){
-  try{ 
-    let id = request.params.bookID;
+// DELETE search route handler
+async function deleteSearch(request, response, next) {
+  // DeleteSearch function code should go here
+}
+
+// POST search route handler
+async function postSearch(request, response, next) {
+  // PostSearch function code should go here
+}
+
+// PUT search route handler
+async function updateSearch(request, response, next) {
+  try {
+    let id = request.params.searchID;
 
     let data = request.body;
-    
-    const updatedSearch await {model name}.findByIdAndUpdate(id,data{new: true, overwrite: true});
 
-    response.status(200).send(updatedSearch)
-  }catch(error){
+    const updatedSearch = await City.findByIdAndUpdate(id, data, { new: true, overwrite: true });
+
+    response.status(200).send(updatedSearch);
+  } catch (error) {
     next(error);
   }
 }
-
-async function postSearch(request,response,next){
-  let createdSearchgit 
-}
-
-
 
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
-
-app.delete('/search:searchID', deleteSearch)
-app.post('/search', postSearch)
-app.put('/search', updateSearch)
-=======
-// MongoDB connection (Mongoose connection example)
-const MONGODB_URI = process.env.MONGODB_URI;
-
-// mongoose.connect(MONGODB_URI, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
-mongoose.connect(MONGODB_URI);
-
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', () => {
-  console.log('Connected to MongoDB');
-});
-
