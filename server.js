@@ -47,8 +47,7 @@ async function searchLocation(req, res) {
 
   try {
     // Fetch latitude and longitude using geocoding data
-    const { lat, lng } = await getGeocodingData(cityName, apiKey,);
-    console.log(lat,lng)
+    const { lat, lng } = await getGeocodingData(cityName, apiKey);
     // Fetch nearby tourist attractions using latitude and longitude
     const placesOfInterest = await getNearbyTouristAttractions(lat, lng, apiKey);
 
