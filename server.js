@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
+const verifyUser = require('./auth.js')
 
 // Import custom modules
 const City = require('./models/city');
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware setup
 app.use(cors());
+app.use(verifyUser);
 app.use(express.json());
 
 // Route definitions
@@ -45,7 +47,8 @@ async function searchLocation(req, res) {
 
   try {
     // Fetch latitude and longitude using geocoding data
-    const { lat, lng } = await getGeocodingData(cityName, apiKey);
+    const { lat, lng } = await getGeocodingData(cityName, apiKey,);
+    console.log(lat,lng)
     // Fetch nearby tourist attractions using latitude and longitude
     const placesOfInterest = await getNearbyTouristAttractions(lat, lng, apiKey);
 

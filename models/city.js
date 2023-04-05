@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { stringify } = require('querystring');
 
 // Define the schema for a city, which specifies the expected format for data to be stored in MongoDB
 const citySchema = new mongoose.Schema({
@@ -11,6 +12,7 @@ const citySchema = new mongoose.Schema({
   photo_url: String, // URL of a photo of the city
   lat: Number, // Latitude of the city
   lng: Number, // Longitude of the city
+  email: String, // email from Auth0
 });
 
 // Create a City model based on the citySchema schema

@@ -3,6 +3,7 @@ const axios = require('axios');
 // This function retrieves the latitude and longitude of a given city using the Google Geocoding API
 async function getGeocodingData(cityName, apiKey) {
   const geocodingResponse = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityName)}&key=${apiKey}`);
+  console.log(geocodingResponse);
   const lat = geocodingResponse.data.results[0].geometry.location.lat;
   const lng = geocodingResponse.data.results[0].geometry.location.lng;
 
