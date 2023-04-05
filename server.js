@@ -65,12 +65,26 @@ async function searchLocation(req, res) {
 
 // DELETE search route handler
 async function deleteSearch(req, res) {
-  // Code for handling DELETE request should go here
+  try {
+    const searchID = req.params.searchID;
+    await City.findByIdAndDelete(searchID);
+    res.status(200).json({ message: 'Search deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error deleting search' });
+  }
 }
 
 // POST search route handler
 async function postSearch(req, res) {
-  // Code for handling POST request should go here
+  try {
+    const newSearch = new City(req.body);
+    await newSearch.save();
+    res.status(201).json(newSearch);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error saving search' });
+  }
 }
 
 // PUT search route handler
@@ -82,7 +96,7 @@ async function updateSearch(req, res) {
     const data = req.body;
 
     // Update the search data in the database
-    const updatedSearch = await City.findByIdAndUpdate(id, data, { new: true, overwrite: true });
+    const updatedSearch = await City.findByIdAndUpdate(id, data, { new: true });
 
     // Send the updated search data as a response
     res.status(200).send(updatedSearch);
