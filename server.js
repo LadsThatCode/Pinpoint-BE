@@ -39,6 +39,17 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
   console.log('Connected to MongoDB');
 });
+async function getAllCities(req, res) {
+  try {
+    // Fetch all cities from the MongoDB database
+    const cities = await City.find();
+    // Return the list of cities as a JSON response
+    res.json(cities);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching all cities' });
+  }
+}
 
 // Route handler for searching location data
 async function searchLocation(req, res) {
