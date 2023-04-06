@@ -2,13 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
-const verifyUser = require('./auth.js')
+const verifyUser = require('./auth.js');
 
 // Import custom modules
 const City = require('./models/city');
+const User = require('./models/user');
 const {
   getGeocodingData,
-  getNearbyTouristAttractions
+  getNearbyTouristAttractions,
 } = require('./utils/googleMapsApi');
 
 // Initialize the Express app
@@ -25,6 +26,7 @@ app.delete('/search/:searchID', deleteSearch);
 app.post('/search', postSearch);
 app.put('/search/:searchID', updateSearch);
 app.get('/search', searchLocation);
+app.get('/my-cities', getUserCities);
 
 // MongoDB connection using Mongoose
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -39,6 +41,7 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
   console.log('Connected to MongoDB');
 });
+
 async function getAllCities(req, res) {
   try {
     // Fetch all cities from the MongoDB database
@@ -56,7 +59,7 @@ async function searchLocation(req, res) {
   console.log('inside searchLocation');
   const cityName = req.query.city;
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
-  
+
   try {
     // Check if the city exists in the MongoDB database
     const cityInDb = await City.findOne({ name: cityName });
@@ -86,9 +89,15 @@ async function searchLocation(req, res) {
       });
       console.log('New City Data:', newCity);
 
-
       // Save the new city to the MongoDB database
       await newCity.save();
+
+      // Find or create the user in the database
+      const user = await User.findOneAndUpdate(
+        { email: req.user.email },
+        { $addToSet: { cities: newCity._id } },
+        { new: true, upsert: true }
+      );
 
       // Return the new city data
       res.json(newCity);
@@ -96,6 +105,17 @@ async function searchLocation(req, res) {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error fetching data' });
+  }
+}
+
+// Route handler for getting user's cities
+async function getUserCities(req, res) {
+  try {
+    const user = await User.findOne({ email: req.user.email }).populate('cities');
+    res.json(user.cities);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching user cities' });
   }
 }
 
