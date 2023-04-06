@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 const verifyUser = require('./auth.js');
 
-// Import custom modules
+// Import custom moduless
 const City = require('./models/city');
 const User = require('./models/user');
 const {
