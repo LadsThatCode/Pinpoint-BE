@@ -8,7 +8,7 @@ const citySchema = new mongoose.Schema({
   country: String,
   formatted_address: String, // Formatted address of the city (e.g. "1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA")
   current_time: String, // Current time in the city
-  places_of_interest: Array,// Array of nearby attractions in the city
+  places_of_interest: Array, // Array of nearby attractions in the city
   photo_url: String, // URL of a photo of the city
   lat: Number, // Latitude of the city
   lng: Number, // Longitude of the city
