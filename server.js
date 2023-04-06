@@ -13,7 +13,7 @@ const {
 
 // Initialize the Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 
 // Middleware setup
 app.use(cors());
@@ -42,12 +42,14 @@ db.once('open', () => {
 
 // Route handler for searching location data
 async function searchLocation(req, res) {
+  console.log('inside searchLocation')
   const cityName = req.query.city;
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
-
   try {
     // Fetch latitude and longitude using geocoding data
+    console.log('here1', cityName)
     const { lat, lng } = await getGeocodingData(cityName, apiKey);
+    console.log('here2')
     // Fetch nearby tourist attractions using latitude and longitude
     const placesOfInterest = await getNearbyTouristAttractions(lat, lng, apiKey);
 
