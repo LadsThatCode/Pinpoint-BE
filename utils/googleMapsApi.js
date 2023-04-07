@@ -48,7 +48,7 @@ async function getNearbyTouristAttractions(lat, lng, apiKey) {
   const nearbySearchResponse = await axios.get(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=500&type=tourist_attraction&rankby=prominence&key=${apiKey}`);
   
   // Only retrieve the top 4 tourist attractions
-  const placesOfInterest = nearbySearchResponse.data.results.slice(0, 4).map(place => {
+  const placesOfInterest = await Promise.all(nearbySearchResponse.data.results.slice(0, 4).map(async place => {
     const photoReference = place?.photos?.[0]?.photo_reference;
     const photoUrl = photoReference ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${apiKey}` : null;
 
@@ -57,14 +57,18 @@ async function getNearbyTouristAttractions(lat, lng, apiKey) {
     const address = place?.vicinity;
     const phoneNumber = place?.formatted_phone_number;
 
+    // Get place description from the Wikipedia API
+    const description = await getWikipediaDescription(place.name);
+
     return {
       name: place.name,
       photo_url: photoUrl,
       rating: rating,
       address: address,
-      phone_number: phoneNumber
+      phone_number: phoneNumber,
+      description: description
     };
-  });
+  }));
   console.log('Nearby Search API Response:', nearbySearchResponse.data);
 
   return placesOfInterest;
@@ -112,6 +116,19 @@ async function getGeocodingDataFromLatLng(lat, lng, apiKey) {
     formatted_address,
     current_time: currentTime
   };
+}
+
+async function getWikipediaDescription(placeName) {
+  try {
+    const wikipediaResponse = await axios.get(`https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(placeName)}`);
+    const pages = wikipediaResponse.data.query.pages;
+    const pageId = Object.keys(pages)[0];
+    const description = pages[pageId].extract;
+    return description;
+  } catch (error) {
+    console.error('Error fetching Wikipedia description:', error);
+    return '';
+  }
 }
 
 // Export the two functions so they can be used in other parts of the codebase
