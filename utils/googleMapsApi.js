@@ -70,8 +70,53 @@ async function getNearbyTouristAttractions(lat, lng, apiKey) {
   return placesOfInterest;
 }
 
+async function getGeocodingDataFromLatLng(lat, lng, apiKey) {
+  const geocodingResponse = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
+  console.log(geocodingResponse.data);
+
+  const formatted_address = geocodingResponse.data.results[0].formatted_address;
+
+  // Parse city, state, and country from geocodingResponse.data
+  let city = '';
+  let state = '';
+  let country = '';
+
+  const addressComponents = geocodingResponse.data.results[0].address_components;
+
+  addressComponents.forEach(component => {
+    if (component.types.includes('locality')) {
+      city = component.long_name;
+    }
+    if (component.types.includes('administrative_area_level_1')) {
+      state = component.long_name;
+    }
+    if (component.types.includes('country')) {
+      country = component.long_name;
+    }
+  });
+
+  // Get current time using Google Time Zone API
+  const timestamp = Math.floor(Date.now() / 1000);
+  const timeZoneResponse = await axios.get(`https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${apiKey}`);
+  const timeZoneId = timeZoneResponse.data.timeZoneId;
+  const timeZoneOffset = timeZoneResponse.data.dstOffset + timeZoneResponse.data.rawOffset;
+  const currentTime = new Date((timestamp + timeZoneOffset) * 1000).toISOString();
+  console.log('Geocoding API Response:', geocodingResponse.data);
+
+  return {
+    city,
+    state,
+    country,
+    lat,
+    lng,
+    formatted_address,
+    current_time: currentTime
+  };
+}
+
 // Export the two functions so they can be used in other parts of the codebase
 module.exports = {
   getGeocodingData,
+  getGeocodingDataFromLatLng,
   getNearbyTouristAttractions,
 };

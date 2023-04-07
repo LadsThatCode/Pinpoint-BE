@@ -4,13 +4,15 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 const verifyUser = require('./auth.js');
 
-// Import custom moduless
+// Import custom modules
 const City = require('./models/city');
 const User = require('./models/user');
 const {
   getGeocodingData,
+  getGeocodingDataFromLatLng, // Add this line
   getNearbyTouristAttractions,
 } = require('./utils/googleMapsApi');
+
 
 // Initialize the Express app
 const app = express();
@@ -55,58 +57,73 @@ async function getAllCities(req, res) {
 }
 
 // Route handler for searching location data
+// Route handler for searching location data
 async function searchLocation(req, res) {
   console.log('inside searchLocation');
   const cityName = req.query.city;
+  const lat = req.query.lat;
+  const lng = req.query.lng;
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
 
   try {
-    // Check if the city exists in the MongoDB database
-    const cityInDb = await City.findOne({ name: cityName });
+    let geocodingData;
 
-    if (cityInDb) {
-      // If the city exists in the database, return the stored data
-      res.json(cityInDb);
-    } else {
+    if (cityName) {
+      // Check if the city exists in the MongoDB database
+      const cityInDb = await City.findOne({ name: cityName });
+
+      if (cityInDb) {
+        // If the city exists in the database, return the stored data
+        res.json(cityInDb);
+        return;
+      }
+
       // If the city doesn't exist in the database, fetch the data from the Google API
       console.log('here1', cityName);
-      const geocodingData = await getGeocodingData(cityName, apiKey);
-      console.log('here2');
-      const placesOfInterest = await getNearbyTouristAttractions(geocodingData.lat, geocodingData.lng, apiKey);
-
-      // Create a new City instance with the fetched data
-      const newCity = new City({
-        name: cityName,
-        state: geocodingData.state,
-        country: geocodingData.country,
-        formatted_address: geocodingData.formatted_address,
-        current_time: geocodingData.current_time,
-        lat: geocodingData.lat,
-        lng: geocodingData.lng,
-        places_of_interest: placesOfInterest,
-        photo_url: geocodingData.photo_url,
-        email: req.user.email // assuming that req.user contains the authenticated user data from Auth0
-      });
-      console.log('New City Data:', newCity);
-
-      // Save the new city to the MongoDB database
-      await newCity.save();
-
-      // Find or create the user in the database
-      const user = await User.findOneAndUpdate(
-        { email: req.user.email },
-        { $addToSet: { cities: newCity._id } },
-        { new: true, upsert: true }
-      );
-
-      // Return the new city data
-      res.json(newCity);
+      geocodingData = await getGeocodingData(cityName, apiKey);
+    } else if (lat && lng) {
+      geocodingData = await getGeocodingDataFromLatLng(lat, lng, apiKey);
+    } else {
+      res.status(400).json({ message: 'Please provide either a city name or latitude and longitude' });
+      return;
     }
+
+    console.log('here2');
+    const placesOfInterest = await getNearbyTouristAttractions(geocodingData.lat, geocodingData.lng, apiKey);
+
+    // Create a new City instance with the fetched data
+    const newCity = new City({
+      name: geocodingData.city,
+      state: geocodingData.state,
+      country: geocodingData.country,
+      formatted_address: geocodingData.formatted_address,
+      current_time: geocodingData.current_time,
+      lat: geocodingData.lat,
+      lng: geocodingData.lng,
+      places_of_interest: placesOfInterest,
+      photo_url: geocodingData.photo_url,
+      email: req.user.email // assuming that req.user contains the authenticated user data from Auth0
+    });
+    console.log('New City Data:', newCity);
+
+    // Save the new city to the MongoDB database
+    await newCity.save();
+
+    // Find or create the user in the database
+    const user = await User.findOneAndUpdate(
+      { email: req.user.email },
+      { $addToSet: { cities: newCity._id } },
+      { new: true, upsert: true }
+    );
+
+    // Return the new city data
+    res.json(newCity);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error fetching data' });
   }
 }
+
 
 // Route handler for getting user's cities
 async function getUserCities(req, res) {
