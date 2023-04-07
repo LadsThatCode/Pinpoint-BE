@@ -91,6 +91,8 @@ async function searchLocation(req, res) {
     console.log('here2');
     const placesOfInterest = await getNearbyTouristAttractions(geocodingData.lat, geocodingData.lng, apiKey);
 
+    const label = req.body.label; 
+
     // Create a new City instance with the fetched data
     const newCity = new City({
       name: geocodingData.city,
@@ -102,7 +104,8 @@ async function searchLocation(req, res) {
       lng: geocodingData.lng,
       places_of_interest: placesOfInterest,
       photo_url: geocodingData.photo_url,
-      email: req.user.email // assuming that req.user contains the authenticated user data from Auth0
+      label: label,
+      email: req.user.email 
     });
     console.log('New City Data:', newCity);
 
